@@ -1,48 +1,60 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            Consultation du {{ $consultation->date?->format('d/m/Y') }} — {{ $consultation->dossierMedical->patient->nom_complet }}
-        </h2>
+        <nav class="flex items-center gap-1.5">
+            <span>Accueil</span>
+            <span class="text-gray-300">/</span>
+            <a href="{{ route('patients.index') }}" class="hover:text-teal-700">Patients</a>
+            <span class="text-gray-300">/</span>
+            <a href="{{ route('patients.show', $consultation->dossierMedical->patient_id) }}" class="hover:text-teal-700">{{ $consultation->dossierMedical->patient->nom_complet }}</a>
+            <span class="text-gray-300">/</span>
+            <span class="text-gray-700 font-medium">Consultation</span>
+        </nav>
     </x-slot>
 
-    <div class="py-8">
-        <div class="max-w-2xl mx-auto sm:px-6 lg:px-8 space-y-4">
+    <div class="p-4 sm:p-6">
+        <div class="max-w-2xl mx-auto space-y-4">
+
+            <h1 class="text-xl font-semibold text-gray-800">
+                Consultation du {{ $consultation->date?->format('d/m/Y') }}
+            </h1>
 
             @if (session('success'))
-                <div class="p-4 bg-green-100 text-green-800 rounded-md">{{ session('success') }}</div>
+                <div class="p-3 bg-green-50 border border-green-200 text-green-800 rounded-md text-sm">{{ session('success') }}</div>
             @endif
 
-            <div class="bg-white shadow rounded-lg p-6">
+            <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-6">
                 <dl class="space-y-4 text-sm">
                     <div>
-                        <dt class="text-gray-500">Agent traitant</dt>
-                        <dd>{{ $consultation->agent->name ?? '—' }}</dd>
+                        <dt class="text-gray-400 text-xs uppercase mb-0.5">Agent traitant</dt>
+                        <dd class="text-gray-800">{{ $consultation->agent->name ?? '—' }}</dd>
                     </div>
                     <div>
-                        <dt class="text-gray-500">Motif</dt>
-                        <dd>{{ $consultation->motif }}</dd>
+                        <dt class="text-gray-400 text-xs uppercase mb-0.5">Motif</dt>
+                        <dd class="text-gray-800">{{ $consultation->motif }}</dd>
                     </div>
                     <div>
-                        <dt class="text-gray-500">Diagnostic</dt>
-                        <dd>{{ $consultation->diagnostic ?? '—' }}</dd>
+                        <dt class="text-gray-400 text-xs uppercase mb-0.5">Diagnostic</dt>
+                        <dd class="text-gray-800">{{ $consultation->diagnostic ?? '—' }}</dd>
                     </div>
                     <div>
-                        <dt class="text-gray-500">Traitement prescrit</dt>
-                        <dd>{{ $consultation->traitement ?? '—' }}</dd>
+                        <dt class="text-gray-400 text-xs uppercase mb-0.5">Traitement prescrit</dt>
+                        <dd class="text-gray-800">{{ $consultation->traitement ?? '—' }}</dd>
                     </div>
                 </dl>
             </div>
 
             <div class="flex justify-between">
-                <a href="{{ route('patients.show', $consultation->dossierMedical->patient_id) }}" class="text-gray-600 text-sm">← Retour au dossier patient</a>
-                <div class="space-x-2">
+                <a href="{{ route('patients.show', $consultation->dossierMedical->patient_id) }}" class="text-sm text-gray-600 hover:text-gray-800">← Retour au dossier patient</a>
+                <div class="flex items-center gap-2">
                     <a href="{{ route('consultations.edit', $consultation) }}"
-                       class="bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded-md text-sm">Modifier</a>
-                    <form action="{{ route('consultations.destroy', $consultation) }}" method="POST" class="inline"
+                       class="inline-flex items-center gap-1.5 bg-sky-50 hover:bg-sky-100 text-sky-700 px-3 py-2 rounded-md text-sm font-medium">
+                        Modifier
+                    </a>
+                    <form action="{{ route('consultations.destroy', $consultation) }}" method="POST"
                           onsubmit="return confirm('Supprimer cette consultation ?');">
                         @csrf
                         @method('DELETE')
-                        <button type="submit" class="bg-red-100 hover:bg-red-200 text-red-700 px-4 py-2 rounded-md text-sm">Supprimer</button>
+                        <button type="submit" class="bg-red-50 hover:bg-red-100 text-red-700 px-3 py-2 rounded-md text-sm font-medium">Supprimer</button>
                     </form>
                 </div>
             </div>
