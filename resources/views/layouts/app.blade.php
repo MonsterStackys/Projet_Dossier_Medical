@@ -100,9 +100,14 @@
                     <div x-data="{ open: false }" class="relative ml-auto">
                         <button @click="open = !open" @click.outside="open = false"
                                 class="flex items-center gap-2 text-sm font-medium text-gray-700 hover:text-gray-900">
-                            <span class="w-8 h-8 rounded-full bg-teal-700 text-white flex items-center justify-center text-xs font-semibold">
-                                {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
-                            </span>
+                            @if (Auth::user()->avatar_url)
+                                <img src="{{ Auth::user()->avatar_url }}" alt="{{ Auth::user()->name }}"
+                                     class="w-8 h-8 rounded-full object-cover">
+                            @else
+                                <span class="w-8 h-8 rounded-full bg-teal-700 text-white flex items-center justify-center text-xs font-semibold">
+                                    {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
+                                </span>
+                            @endif
                             {{ Auth::user()->name }}
                             <svg class="w-4 h-4 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
                                 <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />

@@ -5,21 +5,51 @@ use App\Http\Controllers\PatientController;
 use App\Http\Controllers\ConsultationController;
 use App\Http\Controllers\RendezVousController;
 use App\Http\Controllers\UserController;
-use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuditController;
+use Illuminate\Support\Facades\Route;
+
+// Modèles nécessaires pour les statistiques
+use App\Models\Patient;
+use App\Models\Consultation;
+use App\Models\RendezVous;
+use App\Models\User;
 
 Route::get('/', function () {
     return redirect()->route(auth()->check() ? 'dashboard' : 'login');
 });
 
-Route::get('/dashboard', function () {
-    return view('dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+// Groupe de routes nécessitant d'être authentifié
+Route::middleware(['auth', 'verified'])->group(function () {
+    
+    // Dashboard avec toutes les clés requises par votre vue Blade
+    Route::get('/dashboard', function () {
+        $stats = [
+            'total_patients'        => Patient::count(),
+            'dossiers_actifs'       => Patient::where('is_archived', false)->count(),
+            'total_consultations'   => Consultation::count(),
+            'consultations_mois'    => Consultation::whereMonth('created_at', now()->month)
+                                                 ->whereYear('created_at', now()->year)
+                                                 ->count(),
+            'total_rendezvous'      => RendezVous::count(),
+            'rendezvous_aujourdhui' => RendezVous::whereDate('date_rendez_vous', now()->today())->count(),
+            'total_users'           => User::count(),
+        ];
 
-Route::get('patients/{patient}/toggle-archive', [PatientController::class, 'toggleArchive'])->name('patients.toggle-archive');
-Route::get('audit', [AuditController::class, 'index'])->name('audit.index');
+        // Récupère les 5 prochains rendez-vous à venir
+        $prochainsRdv = RendezVous::with('patient')
+            ->whereDate('date_rendez_vous', '>=', now()->today())
+            ->orderBy('date_rendez_vous', 'asc')
+            ->take(5)
+            ->get();
 
-Route::middleware('auth')->group(function () {
+        return view('dashboard', compact('stats', 'prochainsRdv'));
+    })->name('dashboard');
+
+    // Sécurisation : Déplacement des routes patients et audit dans le middleware auth
+    Route::get('patients/{patient}/toggle-archive', [PatientController::class, 'toggleArchive'])->name('patients.toggle-archive');
+    Route::get('audit', [AuditController::class, 'index'])->name('audit.index');
+
+    // Ressources et sous-routes
     Route::resource('patients', PatientController::class);
 
     Route::get('dossiers/{dossier}/consultations/create', [ConsultationController::class, 'create'])->name('consultations.create');
@@ -37,9 +67,14 @@ Route::middleware('auth')->group(function () {
 
     Route::resource('users', UserController::class)->except(['show']);
 
+    // Routes du profil utilisateur (y compris la gestion de la photo)
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    
+    // NOUVELLES ROUTES : Gestion de la photo de profil
+    Route::post('/profile/photo', [ProfileController::class, 'updatePhoto'])->name('profile.photo.update');
+    Route::delete('/profile/photo', [ProfileController::class, 'destroyPhoto'])->name('profile.photo.destroy');
 });
 
 require __DIR__.'/auth.php';
