@@ -1,13 +1,16 @@
 #!/bin/sh
 set -e
 
-echo "=== Étape 1/3 : Migrations ==="
+echo "=== Etape 1/4 : Migrations ==="
 php artisan migrate --force
 
-echo "=== Étape 2/3 : Seeding (rôles, permissions, compte admin) ==="
+echo "=== Etape 2/4 : Lien de stockage (fichiers uploades) ==="
+php artisan storage:link || true
+
+echo "=== Etape 3/4 : Seeding (roles, permissions, compte admin) ==="
 php artisan db:seed --class=RoleSeeder --force
 
-echo "=== Étape 3/3 : Démarrage du serveur ==="
+echo "=== Etape 4/4 : Demarrage du serveur ==="
 php artisan config:cache
 php artisan route:cache
 php artisan view:cache
