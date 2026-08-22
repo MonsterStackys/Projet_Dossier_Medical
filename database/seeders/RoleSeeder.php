@@ -26,19 +26,19 @@ class RoleSeeder extends Seeder
             Permission::firstOrCreate(['name' => $permission]);
         }
 
-        // 2. Rôle Admin — gestion du système, PAS d'acte clinique
-        // (traçabilité : un diagnostic/traitement doit être attribuable à un soignant réel)
+        // 2. Rôle Admin — gestion du système uniquement.
+        // Ni actes cliniques (gerer-consultations) ni planification de
+        // rendez-vous (gerer-rendezvous) : ces tâches sont réservées aux
+        // médecins et au secrétariat, pas à l'administration système.
         $admin = Role::firstOrCreate(['name' => 'admin']);
         $admin->syncPermissions([
             'gerer-utilisateurs',
-            'gerer-patients',      // peut corriger des données administratives d'un patient
-            'gerer-rendezvous',    // peut réorganiser un planning en cas de besoin
+            'gerer-patients',
             'consulter-audit',
             'archiver-dossiers',
         ]);
-        // Volontairement PAS de 'gerer-consultations' ici.
 
-        // 3. Rôle Médecin — seul rôle habilité à la saisie clinique
+        // 3. Rôle Médecin — saisie clinique + gestion de ses rendez-vous
         $medecin = Role::firstOrCreate(['name' => 'medecin']);
         $medecin->syncPermissions([
             'gerer-patients',
